@@ -29,25 +29,25 @@ fun AnimatedCard(
     targetRotation: Float,
     finalRotation: Float,
     isAnimating: Boolean,
-    animationStep: Int,
-    onStepChange: (Int) -> Unit,
+    animationStep: AnimationStep?,
+    onStepChange: (AnimationStep) -> Unit,
     onAnimationComplete: () -> Unit,
 ) {
     val density = LocalDensity.current
 
     val animatedTranslationX by animateFloatAsState(
         targetValue = when {
-            isAnimating && animationStep == 1 && cardIndex == 0 -> {
+            isAnimating && animationStep == AnimationStep.MoveRight && cardIndex == 0 -> {
                 val moveDistance = with(density) { 50.dp.toPx() }
                 val rotationRad = Math.toRadians(targetRotation.toDouble())
                 moveDistance * cos(rotationRad).toFloat()
             }
-            isAnimating && animationStep == 2 -> 0f
+            isAnimating && animationStep == AnimationStep.MoveTop -> 0f
             else -> 0f
         },
         animationSpec = tween(durationMillis = 300),
         finishedListener = {
-            if (isAnimating && (animationStep == 1 || animationStep == 2)) {
+            if (isAnimating && (animationStep == AnimationStep.MoveRight || animationStep == AnimationStep.MoveTop)) {
                 handleAnimationStepComplete(
                     step = animationStep,
                     cardIndex = cardIndex,
@@ -61,12 +61,12 @@ fun AnimatedCard(
 
     val animatedTranslationY by animateFloatAsState(
         targetValue = when {
-            isAnimating && animationStep == 1 && cardIndex == 0 -> {
+            isAnimating && animationStep == AnimationStep.MoveRight && cardIndex == 0 -> {
                 val moveDistance = with(density) { 50.dp.toPx() }
                 val rotationRad = Math.toRadians(targetRotation.toDouble())
                 moveDistance * sin(rotationRad).toFloat()
             }
-            isAnimating && animationStep == 2 -> 0f
+            isAnimating && animationStep == AnimationStep.MoveTop -> 0f
             else -> 0f
         },
         animationSpec = tween(durationMillis = 300),
@@ -75,13 +75,13 @@ fun AnimatedCard(
 
     val animatedRotation by animateFloatAsState(
         targetValue = when {
-            animationStep == 3 -> finalRotation
+            animationStep == AnimationStep.FinalTurn -> finalRotation
             isAnimating -> targetRotation
             else -> targetRotation
         },
-        animationSpec = tween(durationMillis = if (animationStep == 3) 300 else 800),
+        animationSpec = tween(durationMillis = if (animationStep == AnimationStep.FinalTurn) 300 else 800),
         finishedListener = {
-            if (isAnimating && animationStep == 3) {
+            if (isAnimating && animationStep == AnimationStep.FinalTurn) {
                 handleAnimationStepComplete(
                     step = animationStep,
                     cardIndex = cardIndex,
@@ -93,7 +93,7 @@ fun AnimatedCard(
         label = "rotation",
     )
 
-    val shouldBringToFront = isAnimating && animationStep >= 2 && cardIndex == 0
+    val shouldBringToFront = isAnimating && (animationStep == AnimationStep.MoveTop || animationStep == AnimationStep.FinalTurn) && cardIndex == 0
 
     Card(
         modifier = Modifier
@@ -126,16 +126,16 @@ fun AnimatedCard(
 }
 
 fun handleAnimationStepComplete(
-    step: Int,
+    step: AnimationStep,
     cardIndex: Int,
-    onStepChange: (Int) -> Unit,
+    onStepChange: (AnimationStep) -> Unit,
     onAnimationComplete: () -> Unit
 ) {
     if (cardIndex == 0) {
         when (step) {
-            1 -> onStepChange(2)
-            2 -> onStepChange(3)
-            3 -> onAnimationComplete()
+            AnimationStep.MoveRight -> onStepChange(AnimationStep.MoveTop)
+            AnimationStep.MoveTop -> onStepChange(AnimationStep.FinalTurn)
+            AnimationStep.FinalTurn -> onAnimationComplete()
         }
     }
 }

@@ -3,6 +3,7 @@ package ru.yandexpraktikum.cardsanimation.compose
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -33,10 +34,17 @@ fun calculateCardRotation(
     }
 }
 
+@Immutable
 data class CardSwapAnimationState(
     val isAnimating: Boolean = false,
-    val animationStep: Int = 0,
+    val animationStep: AnimationStep? = null,
 )
+
+enum class AnimationStep {
+    MoveRight,
+    MoveTop,
+    FinalTurn;
+}
 
 @Composable
 fun AnimatedCardStack(
@@ -86,7 +94,7 @@ fun AnimatedCardStack(
                                         onCardsReorder = {
                                             animationState = CardSwapAnimationState(
                                                 isAnimating = true,
-                                                animationStep = 1
+                                                animationStep = AnimationStep.MoveRight,
                                             )
                                         }
                                     )
@@ -123,7 +131,10 @@ fun AnimatedCardStack(
                     },
                     onAnimationComplete = {
                         currentCards = reorderCards(currentCards)
-                        animationState = animationState.copy(isAnimating = false, animationStep = 0)
+                        animationState = animationState.copy(
+                            isAnimating = false,
+                            animationStep = null,
+                        )
                     },
                 )
             }

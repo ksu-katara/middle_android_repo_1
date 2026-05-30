@@ -34,34 +34,42 @@ class AnimatedCardStackView @JvmOverloads constructor(
                 e2: MotionEvent,
                 distanceX: Float,
                 distanceY: Float
-            ): Boolean {
-                if (e1 == null) return false
-
-                verticalDragOffset = e2.x - e1.x
-                horizontalDragOffset = e2.y - e1.y
-
-                return true
-            }
+            ): Boolean = processScroll(e1, e2)
 
             override fun onFling(
                 e1: MotionEvent?,
                 e2: MotionEvent,
                 velocityX: Float,
                 velocityY: Float
-            ): Boolean {
-                if (e1 == null) return false
-
-                val horizontalDragOffset = e2.x - e1.x
-                val verticalDragOffset = e2.y - e1.y
-
-                return handleDragEnd(
-                    horizontalDragOffset = horizontalDragOffset,
-                    verticalDragOffset = verticalDragOffset,
-                    velocityX = velocityX,
-                    velocityY = velocityY,
-                )
-            }
+            ) = processFling(e1, e2, velocityX, velocityY)
         })
+
+    private fun processScroll(e1: MotionEvent?, e2: MotionEvent): Boolean {
+        if (e1 == null) return false
+
+        verticalDragOffset = e2.x - e1.x
+        horizontalDragOffset = e2.y - e1.y
+        return true
+    }
+
+    private fun processFling(
+        e1: MotionEvent?,
+        e2: MotionEvent,
+        velocityX: Float,
+        velocityY: Float
+    ): Boolean {
+        if (e1 == null) return false
+
+        val horizontalDragOffset = e2.x - e1.x
+        val verticalDragOffset = e2.y - e1.y
+
+        return handleDragEnd(
+            horizontalDragOffset = horizontalDragOffset,
+            verticalDragOffset = verticalDragOffset,
+            velocityX = velocityX,
+            velocityY = velocityY,
+        )
+    }
 
     private fun handleVerticalSwipe(offset: Float) {
         isRotated = if (offset > 0) true else false
